@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olivia's College Wishlist - University of Michigan Class of 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    <style>
+        :root {
+            --michigan-navy: #00274C;
+            --michigan-maize: #FFCB05;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .michigan-header {
+            background: linear-gradient(135deg, #00274C 0%, #003d7a 100%);
+            color: white;
+            padding: 2rem 1rem;
+        }
+        
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 39, 76, 0.3);
+        }
+        
+        .slide {
+            display: none;
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .dots {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+        .dot {
+            height: 12px;
+            width: 12px;
+            margin: 0 5px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .dot.active {
+            background-color: #00274C;
+        }
+        
+        .item-card {
+            background: white;
+            border-left: 4px solid #00274C;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .item-card:hover {
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .item-card.claimed {
+            background-color: #f0f8ff;
+            border-left-color: #FFCB05;
+        }
+        
+        .category-header {
+            background: linear-gradient(90deg, #00274C 0%, #003d7a 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin: 2rem 0 1rem 0;
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+        
+        .claim-button {
+            background-color: #00274C;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .claim-button:hover {
+            background-color: #003d7a;
+            transform: scale(1.05);
+        }
+        
+        .claim-button.claimed {
+            background-color: #FFCB05;
+            color: #00274C;
+        }
+        
+        .admin-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: #00274C;
+            color: white;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .admin-button:hover {
+            background-color: #003d7a;
+            transform: scale(1.1);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            overflow: auto;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00274C;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #FFCB05;
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin: 1rem 0;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #00274C;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00274C;
+            box-shadow: 0 0 5px rgba(0, 39, 76, 0.3);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .button-group button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #00274C;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #003d7a;
+        }
+        
+        .btn-secondary {
+            background-color: #ddd;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #bbb;
+        }
+        
+        .wolverine-logo {
+            font-size: 3rem;
+            margin: 1rem 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            background-color: #FFCB05;
+            color: #00274C;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00274C;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Wolverine Logo -->
+    <div class="michigan-header">
+        <div class="max-w-6xl mx-auto">
+            <div class="wolverine-logo text-center">🏈</div>
+            <h1 class="text-4xl font-bold text-center mb-2">GO BLUE!</h1>
+            <h2 class="text-2xl text-center">Olivia's College Wishlist</h2>
+            <p class="text-center text-yellow-100 mt-2">University of Michigan Class of 2026</p>
+        </div>
+    </div>
+    
+    <!-- Face Photo Slideshow -->
+    <div class="max-w-6xl mx-auto px-4 my-8">
+        <div class="slideshow-container">
+            <div id="slides"></div>
+        </div>
+        <div class="dots" id="dots"></div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+        <!-- Claim Button (for friends/family) -->
+        <div class="text-center my-8">
+            <button onclick="showClaimModal()" class="claim-button px-8 py-3 text-lg">✨ Claim an Item for Olivia ✨</button>
+        </div>
+        
+        <!-- AVAILABLE ITEMS SECTION -->
+        <div id="availableSection">
+            <div class="text-center my-8">
+                <h3 class="text-3xl font-bold text-engineering">📦 Items Olivia Needs</h3>
+                <p class="text-gray-600 mt-2">Help her get ready for U of M! Click an item to see details and claim it.</p>
+            </div>
+            <div id="availableItems"></div>
+        </div>
+        
+        <!-- CLAIMED ITEMS SECTION -->
+        <div id="claimedSection" style="display:none;">
+            <div class="category-header">🎁 Already Claimed Items</div>
+            <div id="claimedItems"></div>
+        </div>
+    </div>
+    
+    <!-- Admin Button -->
+    <button class="admin-button" onclick="showAdminLogin()" title="Admin Login">⚙️</button>
+    
+    <!-- MODALS -->
+    
+    <!-- Claim Modal (for friends/family) -->
+    <div id="claimModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Claim an Item for Olivia</div>
+            <form id="claimForm">
+                <div class="form-group">
+                    <label for="claimName">Your Name *</label>
+                    <input type="text" id="claimName" required placeholder="e.g., Grandma Smith">
+                </div>
+                <div class="form-group">
+                    <label for="claimItem">Which Item? *</label>
+                    <input type="text" id="claimItem" required placeholder="e.g., Twin XL Sheets">
+                </div>
+                <div class="form-group">
+                    <label for="claimEmail">Email (optional)</label>
+                    <input type="email" id="claimEmail" placeholder="your.email@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="claimMessage">Personal Message (optional - only Ali sees this)</label>
+                    <textarea id="claimMessage" rows="3" placeholder="e.g., I'll get this for graduation!"></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">✅ Claim Item</button>
+                    <button type="button" class="btn-secondary" onclick="closeClaimModal()">❌ Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Admin Login</div>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminPassword">Password *</label>
+                    <input type="password" id="adminPassword" required placeholder="Enter admin password">
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">Login</button>
+                    <button type="button" class="btn-secondary" onclick="closeAdminLogin()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Item Detail Modal -->
+    <div id="itemModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" id="itemModalTitle">Item Details</div>
+            <div id="itemModalBody"></div>
+            <div class="button-group">
+                <button type="button" class="btn-secondary" onclick="closeItemModal()">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // FIREBASE CONFIG - UPDATE WITH YOUR CREDENTIALS
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            databaseURL: "https://YOUR_PROJECT.firebaseio.com"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
+        // WISHLIST DATA - TEMPORARY (will be replaced with Firebase)
+        const wishlistData = {
+            'Packing List': [
+                {
+                    id: 'sheets',
+                    name: 'Twin XL Sheet Sets',
+                    category: 'Bedroom & Bedding',
+                    price: 45,
+                    description: 'High-quality cotton Twin XL sheets (2-3 sets recommended)',
+                    link: 'https://www.amazon.com/s?k=twin+xl+sheets',
+                    image: 'https://via.placeholder.com/300x300?text=Twin+XL+Sheets'
+                },
+                {
+                    id: 'comforter',
+                    name: 'Comforter/Duvet',
+                    category: 'Bedroom & Bedding',
+                    price: 80,
+                    description: 'Warm Michigan winter comforter',
+                    link: 'https://www.amazon.com/s?k=twin+xl+comforter',
+                    image: 'https://via.placeholder.com/300x300?text=Comforter'
+                },
+                {
+                    id: 'towels',
+                    name: 'Towel Set',
+                    category: 'Bathroom & Toiletries',
+                    price: 35,
+                    description: 'Bath towels, hand towels, and washcloths',
+                    link: 'https://www.amazon.com/s?k=towel+sets',
+                    image: 'https://via.placeholder.com/300x300?text=Towels'
+                },
+            ],
+            'Giftable Items': [
+                {
+                    id: 'mattress-topper',
+                    name: 'Mattress Topper',
+                    category: 'Dorm Room Gifts',
+                    price: 60,
+                    description: 'Extra comfort for dorm bed',
+                    link: 'https://www.amazon.com/s?k=twin+xl+mattress+topper',
+                    image: 'https://via.placeholder.com/300x300?text=Mattress+Topper'
+                },
+                {
+                    id: 'desk-lamp',
+                    name: 'LED Desk Lamp',
+                    category: 'Tech & Utilities',
+                    price: 40,
+                    description: 'Adjustable brightness, USB charging port',
+                    link: 'https://www.amazon.com/s?k=led+desk+lamp',
+                    image: 'https://via.placeholder.com/300x300?text=Desk+Lamp'
+                },
+            ],
+            'Travel Items': [
+                {
+                    id: 'luggage',
+                    name: 'Carry-on Suitcase',
+                    category: 'Luggage & Organization',
+                    price: 120,
+                    description: 'Lightweight, TSA-approved carry-on',
+                    link: 'https://www.amazon.com/s?k=carry+on+luggage',
+                    image: 'https://via.placeholder.com/300x300?text=Luggage'
+                },
+            ],
+            'Gift Cards': [
+                {
+                    id: 'amazon',
+                    name: 'Amazon Gift Card',
+                    category: 'Shopping & Campus',
+                    price: 'Any amount',
+                    description: 'Perfect for last-minute items',
+                    link: 'https://www.amazon.com/gp/product/B004LLIKVU',
+                    image: 'https://via.placeholder.com/300x300?text=Amazon'
+                },
+                {
+                    id: 'starbucks',
+                    name: 'Starbucks Gift Card',
+                    category: 'Food & Delivery',
+                    price: 'Any amount',
+                    description: 'For those early morning study sessions',
+                    link: 'https://www.starbucks.com/gift',
+                    image: 'https://via.placeholder.com/300x300?text=Starbucks'
+                },
+            ]
+        };
+        
+        // FACE PHOTOS FOR SLIDESHOW
+        const facePhotos = [
+            'Faces/1BA7DCD3-B1CF-45A4-8552-69C8363023C4.jpeg',
+            'Faces/CIMG1601.jpeg',
+            'Faces/CIMG1988.jpeg',
+            'Faces/IMG_0254.jpeg',
+            'Faces/IMG_0406.jpeg',
+            'Faces/IMG_1259.jpeg',
+            'Faces/IMG_1732.jpeg',
+            'Faces/IMG_2297.jpeg',
+            'Faces/IMG_2677.jpeg',
+            'Faces/IMG_3086.jpeg',
+            'Faces/IMG_4726.jpeg',
+            'Faces/IMG_4989.jpeg',
+            'Faces/IMG_8734.jpeg',
+            'Faces/Olivia_Weitzman-9183.jpeg',
+            'Faces/P1000700.jpeg'
+        ];
+        
+        let currentSlide = 0;
+        const adminPassword = 'Wolverine2026';
+        let isAdmin = false;
+        
+        // Initialize slideshow
+        function initSlideshow() {
+            const slidesDiv = document.getElementById('slides');
+            const dotsDiv = document.getElementById('dots');
+            
+            facePhotos.forEach((photo, index) => {
+                const img = document.createElement('img');
+                img.src = photo;
+                img.className = `slide ${index === 0 ? 'active' : ''}`;
+                img.alt = `Olivia ${index + 1}`;
+                slidesDiv.appendChild(img);
+                
+                const dot = document.createElement('span');
+                dot.className = `dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                dotsDiv.appendChild(dot);
+            });
+            
+            setInterval(nextSlide, 3000);
+        }
+        
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % facePhotos.length;
+            showSlide(currentSlide);
+        }
+        
+        function goToSlide(n) {
+            currentSlide = n;
+            showSlide(currentSlide);
+        }
+        
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            slides[n].classList.add('active');
+            dots[n].classList.add('active');
+        }
+        
+        // Modal Functions
+        function showClaimModal() {
+            document.getElementById('claimModal').classList.add('show');
+        }
+        
+        function closeClaimModal() {
+            document.getElementById('claimModal').classList.remove('show');
+        }
+        
+        function showAdminLogin() {
+            document.getElementById('adminLoginModal').classList.add('show');
+        }
+        
+        function closeAdminLogin() {
+            document.getElementById('adminLoginModal').classList.remove('show');
+        }
+        
+        function closeItemModal() {
+            document.getElementById('itemModal').classList.remove('show');
+        }
+        
+        // Admin Login
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            if (password === adminPassword) {
+                isAdmin = true;
+                closeAdminLogin();
+                showAdminDashboard();
+                document.getElementById('adminPassword').value = '';
+            } else {
+                alert('❌ Incorrect password. Try again!');
+            }
+        });
+        
+        // Claim Form
+        document.getElementById('claimForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const claimData = {
+                name: document.getElementById('claimName').value,
+                item: document.getElementById('claimItem').value,
+                email: document.getElementById('claimEmail').value,
+                message: document.getElementById('claimMessage').value,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            // Save to Firebase
+            db.ref('claims').push(claimData).then(() => {
+                alert('✅ Thank you! Your claim has been recorded. Ali will confirm the details.');
+                closeClaimModal();
+                document.getElementById('claimForm').reset();
+                loadWishlist();
+            }).catch(error => {
+                alert('Error saving claim: ' + error.message);
+            });
+        });
+        
+        // Load and Display Wishlist
+        function loadWishlist() {
+            const availableDiv = document.getElementById('availableItems');
+            const claimedDiv = document.getElementById('claimedItems');
+            availableDiv.innerHTML = '';
+            claimedDiv.innerHTML = '';
+            let hasClaimedItems = false;
+            
+            Object.keys(wishlistData).forEach(section => {
+                availableDiv.innerHTML += `<div class="category-header">📌 ${section}</div>`;
+                
+                wishlistData[section].forEach(item => {
+                    const itemHTML = `
+                        <div class="item-card">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
+                                    <p class="text-gray-600 text-sm mt-1">${item.category}</p>
+                                    <div class="price-tag">$${item.price}</div>
+                                    <p class="text-gray-700 mt-2">${item.description}</p>
+                                </div>
+                                <button onclick="showItemDetail('${item.id}')" class="claim-button ml-4 whitespace-nowrap">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                    availableDiv.innerHTML += itemHTML;
+                });
+            });
+        }
+        
+        function showItemDetail(itemId) {
+            let item;
+            for (let section in wishlistData) {
+                item = wishlistData[section].find(i => i.id === itemId);
+                if (item) break;
+            }
+            
+            if (item) {
+                document.getElementById('itemModalTitle').textContent = item.name;
+                document.getElementById('itemModalBody').innerHTML = `
+                    <img src="${item.image}" style="width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0;">
+                    <p><strong>Category:</strong> ${item.category}</p>
+                    <p><strong>Price:</strong> $${item.price}</p>
+                    <p><strong>Description:</strong> ${item.description}</p>
+                    <a href="${item.link}" target="_blank" class="btn-primary inline-block mt-4 px-4 py-2 text-white text-decoration-none rounded">🛒 View on Store</a>
+                `;
+                document.getElementById('itemModal').classList.add('show');
+            }
+        }
+        
+        function showAdminDashboard() {
+            alert('🔐 ADMIN MODE ACTIVATED\n\nFull admin dashboard coming soon!\n\nFor now, you can see claims in your Firebase console.');
+            // TODO: Build full admin dashboard
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const claimModal = document.getElementById('claimModal');
+            const adminModal = document.getElementById('adminLoginModal');
+            const itemModal = document.getElementById('itemModal');
+            
+            if (event.target == claimModal) claimModal.classList.remove('show');
+            if (event.target == adminModal) adminModal.classList.remove('show');
+            if (event.target == itemModal) itemModal.classList.remove('show');
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initSlideshow();
+            loadWishlist();
+        });
+    </script>
+</body>
+</html>
