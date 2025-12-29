@@ -781,7 +781,7 @@
                                     <div class="flex-1">
                                         <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
                                         <p class="text-gray-600 text-sm mt-1">${item.category}</p>
-                                        <div class="price-tag">${item.price}</div>
+                                        <div class="price-tag">${item.price.toString().startsWith('$') ? item.price : '$' + item.price}</div>
                                         <p class="text-gray-700 mt-2">${item.description}</p>
                                     </div>
                                     <button onclick="showItemDetail('${item.id}')" class="claim-button ml-4 whitespace-nowrap">View Details</button>
