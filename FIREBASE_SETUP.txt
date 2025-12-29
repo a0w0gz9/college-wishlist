@@ -1,0 +1,151 @@
+===============================================================
+         FIREBASE SETUP FOR COLLEGE WISHLIST
+              Follow These Steps (15 minutes)
+===============================================================
+
+FIREBASE ALLOWS:
+✓ Friends/family claims to sync in real-time
+✓ Personal notes saved securely (only you see them)
+✓ Data stored in the cloud (free tier is enough!)
+
+===============================================================
+STEP 1: CREATE FIREBASE PROJECT
+===============================================================
+
+1. Go to: https://console.firebase.google.com
+2. Click "Create a project"
+3. Project name: "college-wishlist"
+4. Click "Continue"
+5. Uncheck "Enable Google Analytics" (optional)
+6. Click "Create project"
+7. Wait for it to finish (~1 minute)
+
+===============================================================
+STEP 2: CREATE REALTIME DATABASE
+===============================================================
+
+1. In the left sidebar, click "Realtime Database"
+2. Click "Create Database"
+3. Location: "us-central1" (default is fine)
+4. Security rules: Start in "Test Mode" (for now)
+5. Click "Enable"
+
+Wait for it to initialize...
+
+===============================================================
+STEP 3: GET YOUR FIREBASE CONFIG
+===============================================================
+
+1. In left sidebar, click "Project Settings" (gear icon)
+2. Go to "General" tab
+3. Scroll down to "Your apps" section
+4. Click "</> Web App"
+5. Give it a name: "college-wishlist"
+6. Click "Register app"
+7. You'll see a config object that looks like:
+
+   const firebaseConfig = {
+     apiKey: "AIzaSy...",
+     authDomain: "your-project.firebaseapp.com",
+     projectId: "your-project-id",
+     storageBucket: "your-project.appspot.com",
+     messagingSenderId: "123456789",
+     databaseURL: "https://your-project.firebaseio.com"
+   };
+
+8. COPY THIS ENTIRE CONFIG
+
+===============================================================
+STEP 4: UPDATE THE HTML FILE
+===============================================================
+
+1. Open: /Users/a0w0gz9/Desktop/Code Puppy/College_Wishlist/index.html
+2. Find this section (around line 350):
+
+   const firebaseConfig = {
+       apiKey: "YOUR_API_KEY",
+       authDomain: "YOUR_PROJECT.firebaseapp.com",
+       projectId: "YOUR_PROJECT_ID",
+       storageBucket: "YOUR_PROJECT.appspot.com",
+       messagingSenderId: "YOUR_SENDER_ID",
+       databaseURL: "https://YOUR_PROJECT.firebaseio.com"
+   };
+
+3. Replace the entire config with the one you copied from Step 3
+4. Save the file
+
+===============================================================
+STEP 5: PUSH TO GITHUB
+===============================================================
+
+Run this command in Terminal:
+
+cd "/Users/a0w0gz9/Desktop/Code Puppy/College_Wishlist"
+git add index.html
+git commit -m "Add Firebase configuration"
+git push
+
+===============================================================
+STEP 6: UPDATE SECURITY RULES (IMPORTANT!)
+===============================================================
+
+Now we need to set proper security rules so:
+✓ Anyone can submit claims
+✓ Only you (admin) can see notes
+✓ Public can see items
+
+1. Go to: https://console.firebase.google.com
+2. Click your project (college-wishlist)
+3. Left sidebar → Realtime Database
+4. Click "Rules" tab
+5. Replace ALL the text with:
+
+{
+  "rules": {
+    "claims": {
+      ".read": false,
+      ".write": true,
+      "$uid": {
+        ".validate": "newData.hasChildren(['name', 'item'])"
+      }
+    },
+    "items": {
+      ".read": true,
+      ".write": false
+    },
+    "admin": {
+      ".read": "root.child('users').child(auth.uid).exists()",
+      ".write": "root.child('users').child(auth.uid).exists()"
+    }
+  }
+}
+
+6. Click "Publish"
+
+===============================================================
+STEP 7: TEST IT!
+===============================================================
+
+1. Wait 2 minutes for GitHub Pages to update
+2. Go to: https://a0w0gz9.github.io/college-wishlist/
+3. Click "✨ Claim an Item for Olivia ✨"
+4. Fill in the form and submit
+5. Check your Firebase console:
+   - Database → Claims → You should see the data!
+
+===============================================================
+DONE! 🎉
+===============================================================
+
+Your college wishlist is now:
+✓ Live on the web
+✓ Connected to Firebase
+✓ Syncing claims in real-time
+✓ Password protected for admin
+
+Next: Ask Coco to help you add items to the wishlist!
+
+Example:
+  "Update the college wishlist - add these items: [list]"
+
+===============================================================
