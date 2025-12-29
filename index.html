@@ -833,16 +833,18 @@
                 
                 allSections[section].forEach(item => {
                     const priceDisplay = item.price ? (item.price.toString().includes('$') ? item.price : '$' + item.price) : 'TBD';
+                    const imageHTML = item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 0.5rem; margin-right: 1rem;">` : '';
                     const itemHTML = `
                         <div class="item-card">
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1">
+                            <div style="display: flex; gap: 1.5rem;">
+                                ${imageHTML}
+                                <div style="flex: 1;">
                                     <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
                                     <p class="text-gray-600 text-sm mt-1">${item.category || section}</p>
                                     <div class="price-tag">${priceDisplay}</div>
                                     <p class="text-gray-700 mt-2">${item.description}</p>
                                 </div>
-                                <button onclick="showItemDetail('${item.id}')" class="claim-button ml-4 whitespace-nowrap">View Details</button>
+                                <button onclick="showItemDetail('${item.id}')" class="claim-button whitespace-nowrap" style="height: fit-content;">View Details</button>
                             </div>
                         </div>
                     `;
