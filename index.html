@@ -294,6 +294,7 @@
             <div class="nav-menu">
                 <a href="index.html" class="active">🏠 Home</a>
                 <a href="gallery.html">📸 Gallery</a>
+                <button onclick="showAdminLogin()" style="background: none; border: none; color: white; cursor: pointer; font-size: 1.1rem; padding: 0.5rem 1rem; text-decoration: none; font-weight: 600;">⚙️ Admin</button>
             </div>
         </div>
     </div>
@@ -360,6 +361,65 @@
             <div class="button-group">
                 <button type="button" class="btn-secondary" onclick="closeItemModal()">Close</button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">🔐 Admin Login</div>
+            <div class="form-group">
+                <label for="adminPassword">Admin Password</label>
+                <input type="password" id="adminPassword" placeholder="Enter admin password">
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn-primary" onclick="verifyAdminPassword()">Login</button>
+                <button type="button" class="btn-secondary" onclick="closeAdminLogin()">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Panel Modal -->
+    <div id="adminPanelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">⚙️ Admin Panel - Add New Item</div>
+            <form id="addItemForm">
+                <div class="form-group">
+                    <label for="itemName">Item Name *</label>
+                    <input type="text" id="itemName" required placeholder="e.g., Cozy Earth Bath Towel">
+                </div>
+                <div class="form-group">
+                    <label for="itemCategory">Category *</label>
+                    <select id="itemCategory" required style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 0.5rem; font-size: 1rem; font-family: inherit;">
+                        <option value="">-- Select Category --</option>
+                        <option value="Bath">Bath</option>
+                        <option value="Bedding">Bedding</option>
+                        <option value="Storage">Storage</option>
+                        <option value="Giftable Items">Giftable Items</option>
+                        <option value="Travel Items">Travel Items</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="itemPrice">Price</label>
+                    <input type="text" id="itemPrice" placeholder="e.g., $45 or TBD">
+                </div>
+                <div class="form-group">
+                    <label for="itemDescription">Description *</label>
+                    <textarea id="itemDescription" required rows="3" placeholder="Brief description of the item"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="itemLink">Product Link *</label>
+                    <input type="url" id="itemLink" required placeholder="https://example.com/product">
+                </div>
+                <div class="form-group">
+                    <label for="itemImage">Image URL *</label>
+                    <input type="url" id="itemImage" required placeholder="https://example.com/image.jpg">
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">✅ Add Item</button>
+                    <button type="button" class="btn-secondary" onclick="closeAdminPanel()">❌ Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
     
@@ -559,29 +619,100 @@
             });
         });
         
+        // ADMIN FUNCTIONS
+        let isAdmin = false;
+        
+        function showAdminLogin() {
+            document.getElementById('adminLoginModal').classList.add('show');
+        }
+        
+        function closeAdminLogin() {
+            document.getElementById('adminLoginModal').classList.remove('show');
+            document.getElementById('adminPassword').value = '';
+        }
+        
+        function verifyAdminPassword() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === adminPassword) {
+                isAdmin = true;
+                closeAdminLogin();
+                document.getElementById('adminPanelModal').classList.add('show');
+            } else {
+                alert('❌ Incorrect password!');
+            }
+        }
+        
+        function closeAdminPanel() {
+            document.getElementById('adminPanelModal').classList.remove('show');
+            document.getElementById('addItemForm').reset();
+        }
+        
+        // Handle Add Item Form
+        document.getElementById('addItemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newItem = {
+                id: 'item-' + Date.now(),
+                name: document.getElementById('itemName').value,
+                category: document.getElementById('itemCategory').value,
+                price: document.getElementById('itemPrice').value,
+                description: document.getElementById('itemDescription').value,
+                link: document.getElementById('itemLink').value,
+                image: document.getElementById('itemImage').value,
+                addedBy: 'admin',
+                timestamp: new Date().toLocaleString()
+            };
+            
+            // Save to Firebase
+            db.ref('items/' + newItem.id).set(newItem).then(() => {
+                alert('✅ Item added successfully!');
+                closeAdminPanel();
+                loadWishlist(); // Reload to show new item
+            }).catch(error => {
+                alert('Error adding item: ' + error.message);
+            });
+        });
+        
         // Load and Display Wishlist
         function loadWishlist() {
             const availableDiv = document.getElementById('availableItems');
             availableDiv.innerHTML = '';
             
-            Object.keys(wishlistData).forEach(section => {
-                availableDiv.innerHTML += `<div class="category-header">📌 ${section}</div>`;
+            // Load Firebase items
+            db.ref('items').once('value', (snapshot) => {
+                const firebaseItems = snapshot.val() || {};
                 
-                wishlistData[section].forEach(item => {
-                    const itemHTML = `
-                        <div class="item-card">
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
-                                    <p class="text-gray-600 text-sm mt-1">${item.category}</p>
-                                    <div class="price-tag">$${item.price}</div>
-                                    <p class="text-gray-700 mt-2">${item.description}</p>
+                // Merge Firebase items with hardcoded data
+                const allSections = { ...wishlistData };
+                
+                Object.keys(firebaseItems).forEach(itemId => {
+                    const item = firebaseItems[itemId];
+                    if (!allSections[item.category]) {
+                        allSections[item.category] = [];
+                    }
+                    allSections[item.category].push(item);
+                });
+                
+                // Display all items
+                Object.keys(allSections).forEach(section => {
+                    availableDiv.innerHTML += `<div class="category-header">📌 ${section}</div>`;
+                    
+                    allSections[section].forEach(item => {
+                        const itemHTML = `
+                            <div class="item-card">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex-1">
+                                        <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
+                                        <p class="text-gray-600 text-sm mt-1">${item.category}</p>
+                                        <div class="price-tag">${item.price}</div>
+                                        <p class="text-gray-700 mt-2">${item.description}</p>
+                                    </div>
+                                    <button onclick="showItemDetail('${item.id}')" class="claim-button ml-4 whitespace-nowrap">View Details</button>
                                 </div>
-                                <button onclick="showItemDetail('${item.id}')" class="claim-button ml-4 whitespace-nowrap">View Details</button>
                             </div>
-                        </div>
-                    `;
-                    availableDiv.innerHTML += itemHTML;
+                        `;
+                        availableDiv.innerHTML += itemHTML;
+                    });
                 });
             });
         }
