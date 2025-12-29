@@ -49,35 +49,35 @@
         .michigan-header {
             background: linear-gradient(135deg, #00274C 0%, #003d7a 100%);
             color: white;
-            padding: 2rem 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            padding: 3rem 0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            border-bottom: 6px solid #FFCB05;
         }
         
         .header-top {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .logo-section {
-            text-align: center;
-        }
-        
-        .michigan-m {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #FFCB05;
+            justify-content: flex-start;
+            gap: 3rem;
+            margin-bottom: 2rem;
         }
         
         .baby-photo {
-            width: 100px;
-            height: 100px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
-            border: 4px solid #FFCB05;
+            border: 6px solid #FFCB05;
             object-fit: cover;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            flex-shrink: 0;
+        }
+        
+        .michigan-m {
+            font-size: 6rem;
+            font-weight: bold;
+            color: #FFCB05;
+            line-height: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         
         .nav-menu {
@@ -277,17 +277,19 @@
 <body>
     <!-- Header with Navigation -->
     <div class="michigan-header">
-        <div class="max-w-6xl mx-auto px-4">
+        <div class="max-w-7xl mx-auto px-4">
             <div class="header-top">
-                <div class="logo-section">
-                    <div class="michigan-m">M</div>
-                    <p class="text-sm text-yellow-100">Michigan</p>
-                </div>
-                <div class="text-center flex-1">
-                    <h1>GO BLUE!</h1>
-                    <p class="text-xl text-yellow-100 mt-1">Olivia's College Wishlist</p>
-                </div>
                 <img src="./Faces/Oye Yoy Yoy.jpeg" alt="Olivia" class="baby-photo">
+                <div class="flex-1">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="michigan-m">M</div>
+                        <div>
+                            <h1 style="margin: 0; font-size: 4rem;">GO BLUE!</h1>
+                            <p style="font-size: 1.3rem; color: #FFCB05; margin: 0; margin-top: 0.5rem;">Olivia's College Wishlist</p>
+                            <p style="font-size: 1rem; color: #fff; margin: 0; margin-top: 0.25rem;">University of Michigan Class of 2026</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="nav-menu">
                 <a href="index.html" class="active">🏠 Home</a>
