@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olivia's Gallery - University of Michigan Class of 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Varsity&family=Collegiate&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --michigan-navy: #00274C;
+            --michigan-maize: #FFCB05;
+        }
+        
+        body {
+            font-family: Georgia, serif;
+            background: linear-gradient(rgba(0, 39, 76, 0.05), rgba(0, 39, 76, 0.05)), url('./Buildings/UM\ backdrop.png');
+            background-attachment: fixed;
+            background-size: cover;
+        }
+        
+        h1 {
+            font-family: 'Varsity', Georgia, serif;
+            letter-spacing: 3px;
+            font-size: 3rem;
+        }
+        
+        .michigan-header {
+            background: linear-gradient(135deg, #00274C 0%, #003d7a 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+        
+        .nav-menu a:hover {
+            background-color: #FFCB05;
+            color: #00274C;
+        }
+        
+        .nav-menu a.active {
+            background-color: #FFCB05;
+            color: #00274C;
+        }
+        
+        .slideshow-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 2rem auto;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 39, 76, 0.3);
+        }
+        
+        .slide {
+            display: none;
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+        }
+        
+        .slide.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .dots {
+            text-align: center;
+            padding: 1rem 0;
+        }
+        
+        .dot {
+            height: 12px;
+            width: 12px;
+            margin: 0 5px;
+            background-color: #bbb;
+            border-radius: 50%;
+            display: inline-block;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .dot.active {
+            background-color: #00274C;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Navigation -->
+    <div class="michigan-header">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-4">
+                <h1>🏈 GO BLUE! 🏈</h1>
+                <p class="text-xl text-yellow-100">University of Michigan Class of 2026</p>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html">🏠 Home</a>
+                <a href="gallery.html" class="active">📸 Gallery</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slideshow -->
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="text-center my-8">
+            <h2 style="font-family: 'Varsity', Georgia, serif; letter-spacing: 2px; font-size: 2rem;">Meet Olivia!</h2>
+            <p class="text-gray-700 mt-2">Celebrating her journey to U of M 🎓</p>
+        </div>
+        
+        <div class="slideshow-container">
+            <div id="slides"></div>
+        </div>
+        <div class="dots" id="dots"></div>
+    </div>
+    
+    <script>
+        const facePhotos = [
+            './Faces/1BA7DCD3-B1CF-45A4-8552-69C8363023C4.jpeg',
+            './Faces/CIMG1601.jpeg',
+            './Faces/CIMG1988.jpeg',
+            './Faces/IMG_0254.jpeg',
+            './Faces/IMG_0406.jpeg',
+            './Faces/IMG_1259.jpeg',
+            './Faces/IMG_1732.jpeg',
+            './Faces/IMG_2297.jpeg',
+            './Faces/IMG_2677.jpeg',
+            './Faces/IMG_3086.jpeg',
+            './Faces/IMG_4726.jpeg',
+            './Faces/IMG_4989.jpeg',
+            './Faces/IMG_8734.jpeg',
+            './Faces/Olivia_Weitzman-9183.jpeg',
+            './Faces/Oye Yoy Yoy.jpeg',
+            './Faces/P1000700.jpeg'
+        ];
+        
+        let currentSlide = 0;
+        
+        function initSlideshow() {
+            const slidesDiv = document.getElementById('slides');
+            const dotsDiv = document.getElementById('dots');
+            
+            facePhotos.forEach((photo, index) => {
+                const img = document.createElement('img');
+                img.src = photo;
+                img.className = `slide ${index === 0 ? 'active' : ''}`;
+                img.alt = `Olivia ${index + 1}`;
+                slidesDiv.appendChild(img);
+                
+                const dot = document.createElement('span');
+                dot.className = `dot ${index === 0 ? 'active' : ''}`;
+                dot.onclick = () => goToSlide(index);
+                dotsDiv.appendChild(dot);
+            });
+            
+            setInterval(nextSlide, 3000);
+        }
+        
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % facePhotos.length;
+            showSlide(currentSlide);
+        }
+        
+        function goToSlide(n) {
+            currentSlide = n;
+            showSlide(currentSlide);
+        }
+        
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.dot');
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            slides[n].classList.add('active');
+            dots[n].classList.add('active');
+        }
+        
+        document.addEventListener('DOMContentLoaded', initSlideshow);
+    </script>
+</body>
+</html>

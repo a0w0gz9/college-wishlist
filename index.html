@@ -5,81 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Olivia's College Wishlist - University of Michigan Class of 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Playfair+Display:wght@700;900&family=Varsity&family=Collegiate&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-compat-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-compat-database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Varsity&family=Collegiate&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --michigan-navy: #00274C;
             --michigan-maize: #FFCB05;
         }
         
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Crimson Text', Georgia, serif;
-            background-color: #f8f9fa;
-            background-attachment: fixed;
+            background: linear-gradient(rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.88)), url('./Buildings/UM\ backdrop.png') fixed center/cover;
+            min-height: 100vh;
         }
         
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Varsity', 'Collegiate', Georgia, serif;
+            letter-spacing: 2px;
         }
         
         h1 {
-            font-family: 'Varsity', Georgia, serif;
-            letter-spacing: 3px;
+            font-size: 3.5rem;
+            color: #00274C;
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            color: #00274C;
+        }
+        
+        h3 {
+            font-size: 1.8rem;
+            color: #00274C;
         }
         
         .michigan-header {
             background: linear-gradient(135deg, #00274C 0%, #003d7a 100%);
             color: white;
-            padding: 2rem 1rem;
+            padding: 2rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         
-        .slideshow-container {
-            position: relative;
-            width: 100%;
-            max-width: 350px;
-            margin: 0 auto;
-            border-radius: 1rem;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 39, 76, 0.3);
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
         }
         
-        .slide {
-            display: none;
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-        }
-        
-        .slide.active {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .dots {
+        .logo-section {
             text-align: center;
-            padding: 1rem 0;
         }
         
-        .dot {
-            height: 12px;
-            width: 12px;
-            margin: 0 5px;
-            background-color: #bbb;
+        .michigan-m {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FFCB05;
+        }
+        
+        .baby-photo {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            display: inline-block;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            border: 4px solid #FFCB05;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         
-        .dot.active {
-            background-color: #00274C;
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            font-family: 'Varsity', Georgia, serif;
+            letter-spacing: 1px;
+        }
+        
+        .nav-menu a:hover {
+            background-color: #FFCB05;
+            color: #00274C;
+            transform: translateY(-2px);
+        }
+        
+        .nav-menu a.active {
+            background-color: #FFCB05;
+            color: #00274C;
         }
         
         .item-card {
@@ -110,6 +139,8 @@
             margin: 2rem 0 1rem 0;
             font-size: 1.25rem;
             font-weight: bold;
+            font-family: 'Varsity', Georgia, serif;
+            letter-spacing: 1px;
         }
         
         .claim-button {
@@ -121,6 +152,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s;
+            font-family: 'Varsity', Georgia, serif;
         }
         
         .claim-button:hover {
@@ -133,29 +165,11 @@
             color: #00274C;
         }
         
-        .admin-button {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background-color: #00274C;
-            color: white;
-            border: none;
-            padding: 1rem 1.5rem;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            cursor: pointer;
+        .price-tag {
             font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .admin-button:hover {
-            background-color: #003d7a;
-            transform: scale(1.1);
+            font-weight: bold;
+            color: #00274C;
+            margin: 0.5rem 0;
         }
         
         .modal {
@@ -192,6 +206,7 @@
             margin-bottom: 1rem;
             border-bottom: 3px solid #FFCB05;
             padding-bottom: 0.5rem;
+            font-family: 'Varsity', Georgia, serif;
         }
         
         .form-group {
@@ -203,6 +218,7 @@
             font-weight: 600;
             color: #00274C;
             margin-bottom: 0.5rem;
+            font-family: 'Varsity', Georgia, serif;
         }
         
         .form-group input,
@@ -236,6 +252,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            font-family: 'Varsity', Georgia, serif;
         }
         
         .btn-primary {
@@ -255,53 +272,33 @@
         .btn-secondary:hover {
             background-color: #bbb;
         }
-        
-        .wolverine-logo {
-            font-size: 3rem;
-            margin: 1rem 0;
-        }
-        
-        .badge {
-            display: inline-block;
-            background-color: #FFCB05;
-            color: #00274C;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin: 0.25rem;
-        }
-        
-        .price-tag {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #00274C;
-            margin: 0.5rem 0;
-        }
     </style>
 </head>
 <body>
-    <!-- Header with Wolverine Logo -->
+    <!-- Header with Navigation -->
     <div class="michigan-header">
-        <div class="max-w-6xl mx-auto">
-            <div class="wolverine-logo text-center">🏈</div>
-            <h1 class="text-4xl font-bold text-center mb-2">GO BLUE!</h1>
-            <h2 class="text-2xl text-center">Olivia's College Wishlist</h2>
-            <p class="text-center text-yellow-100 mt-2">University of Michigan Class of 2026</p>
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="header-top">
+                <div class="logo-section">
+                    <div class="michigan-m">M</div>
+                    <p class="text-sm text-yellow-100">Michigan</p>
+                </div>
+                <div class="text-center flex-1">
+                    <h1>GO BLUE!</h1>
+                    <p class="text-xl text-yellow-100 mt-1">Olivia's College Wishlist</p>
+                </div>
+                <img src="./Faces/Oye Yoy Yoy.jpeg" alt="Olivia" class="baby-photo">
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="active">🏠 Home</a>
+                <a href="gallery.html">📸 Gallery</a>
+            </div>
         </div>
     </div>
     
-    <!-- Face Photo Slideshow -->
-    <div class="max-w-6xl mx-auto px-4 my-8">
-        <div class="slideshow-container">
-            <div id="slides"></div>
-        </div>
-        <div class="dots" id="dots"></div>
-    </div>
-    
-    <!-- Main Content with Building Backdrop -->
-    <div class="max-w-6xl mx-auto px-4 pb-8" style="background-image: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)), url('./Buildings/UM\ backdrop.png'); background-size: cover; background-position: center; background-attachment: fixed;">
-        <!-- Claim Button (for friends/family) -->
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+        <!-- Claim Button -->
         <div class="text-center my-8">
             <button onclick="showClaimModal()" class="claim-button px-8 py-3 text-lg">✨ Claim an Item for Olivia ✨</button>
         </div>
@@ -309,25 +306,22 @@
         <!-- AVAILABLE ITEMS SECTION -->
         <div id="availableSection">
             <div class="text-center my-8">
-                <h3 class="text-3xl font-bold text-engineering">📦 Items Olivia Needs</h3>
-                <p class="text-gray-600 mt-2">Help her get ready for U of M! Click an item to see details and claim it.</p>
+                <h2>📦 Items Olivia Needs</h2>
+                <p class="text-gray-700 mt-2 text-lg">Help her get ready for U of M! Click an item to see details and claim it.</p>
             </div>
             <div id="availableItems"></div>
         </div>
         
         <!-- CLAIMED ITEMS SECTION -->
-        <div id="claimedSection" style="display:none; background-image: linear-gradient(rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.92)), url('./Buildings/UM\ backdrop.png'); background-size: cover; background-position: center;">
+        <div id="claimedSection" style="display:none;">
             <div class="category-header">🎁 Already Claimed Items</div>
             <div id="claimedItems"></div>
         </div>
     </div>
     
-    <!-- Admin Button -->
-    <button class="admin-button" onclick="showAdminLogin()" title="Admin Login">⚙️</button>
-    
     <!-- MODALS -->
     
-    <!-- Claim Modal (for friends/family) -->
+    <!-- Claim Modal -->
     <div id="claimModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">Claim an Item for Olivia</div>
@@ -356,23 +350,6 @@
         </div>
     </div>
     
-    <!-- Admin Login Modal -->
-    <div id="adminLoginModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">Admin Login</div>
-            <form id="adminLoginForm">
-                <div class="form-group">
-                    <label for="adminPassword">Password *</label>
-                    <input type="password" id="adminPassword" required placeholder="Enter admin password">
-                </div>
-                <div class="button-group">
-                    <button type="submit" class="btn-primary">Login</button>
-                    <button type="button" class="btn-secondary" onclick="closeAdminLogin()">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
     <!-- Item Detail Modal -->
     <div id="itemModal" class="modal">
         <div class="modal-content">
@@ -385,7 +362,7 @@
     </div>
     
     <script>
-        // FIREBASE CONFIG - UPDATED WITH CREDENTIALS
+        // FIREBASE CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyDH7bGW6FdbzZnMIomoW_NtOA54hI_mGoE",
             authDomain: "college-wishlist.firebaseapp.com",
@@ -395,7 +372,6 @@
             databaseURL: "https://college-wishlist-default-rtdb.firebaseio.com"
         };
         
-        // Initialize Firebase
         try {
             firebase.initializeApp(firebaseConfig);
             const db = firebase.database();
@@ -403,7 +379,7 @@
             console.error('Firebase initialization error:', error);
         }
         
-        // WISHLIST DATA - TEMPORARY (will be replaced with Firebase)
+        // WISHLIST DATA
         const wishlistData = {
             'Packing List': [
                 {
@@ -487,70 +463,7 @@
             ]
         };
         
-        // FACE PHOTOS FOR SLIDESHOW
-        const facePhotos = [
-            './Faces/1BA7DCD3-B1CF-45A4-8552-69C8363023C4.jpeg',
-            './Faces/CIMG1601.jpeg',
-            './Faces/CIMG1988.jpeg',
-            './Faces/IMG_0254.jpeg',
-            './Faces/IMG_0406.jpeg',
-            './Faces/IMG_1259.jpeg',
-            './Faces/IMG_1732.jpeg',
-            './Faces/IMG_2297.jpeg',
-            './Faces/IMG_2677.jpeg',
-            './Faces/IMG_3086.jpeg',
-            './Faces/IMG_4726.jpeg',
-            './Faces/IMG_4989.jpeg',
-            './Faces/IMG_8734.jpeg',
-            './Faces/Olivia_Weitzman-9183.jpeg',
-            './Faces/P1000700.jpeg'
-        ];
-        
-        let currentSlide = 0;
         const adminPassword = 'Wolverine2026';
-        let isAdmin = false;
-        
-        // Initialize slideshow
-        function initSlideshow() {
-            const slidesDiv = document.getElementById('slides');
-            const dotsDiv = document.getElementById('dots');
-            
-            facePhotos.forEach((photo, index) => {
-                const img = document.createElement('img');
-                img.src = photo;
-                img.className = `slide ${index === 0 ? 'active' : ''}`;
-                img.alt = `Olivia ${index + 1}`;
-                slidesDiv.appendChild(img);
-                
-                const dot = document.createElement('span');
-                dot.className = `dot ${index === 0 ? 'active' : ''}`;
-                dot.onclick = () => goToSlide(index);
-                dotsDiv.appendChild(dot);
-            });
-            
-            setInterval(nextSlide, 3000);
-        }
-        
-        function nextSlide() {
-            currentSlide = (currentSlide + 1) % facePhotos.length;
-            showSlide(currentSlide);
-        }
-        
-        function goToSlide(n) {
-            currentSlide = n;
-            showSlide(currentSlide);
-        }
-        
-        function showSlide(n) {
-            const slides = document.querySelectorAll('.slide');
-            const dots = document.querySelectorAll('.dot');
-            
-            slides.forEach(slide => slide.classList.remove('active'));
-            dots.forEach(dot => dot.classList.remove('active'));
-            
-            slides[n].classList.add('active');
-            dots[n].classList.add('active');
-        }
         
         // Modal Functions
         function showClaimModal() {
@@ -561,31 +474,9 @@
             document.getElementById('claimModal').classList.remove('show');
         }
         
-        function showAdminLogin() {
-            document.getElementById('adminLoginModal').classList.add('show');
-        }
-        
-        function closeAdminLogin() {
-            document.getElementById('adminLoginModal').classList.remove('show');
-        }
-        
         function closeItemModal() {
             document.getElementById('itemModal').classList.remove('show');
         }
-        
-        // Admin Login
-        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const password = document.getElementById('adminPassword').value;
-            if (password === adminPassword) {
-                isAdmin = true;
-                closeAdminLogin();
-                showAdminDashboard();
-                document.getElementById('adminPassword').value = '';
-            } else {
-                alert('❌ Incorrect password. Try again!');
-            }
-        });
         
         // Claim Form
         document.getElementById('claimForm').addEventListener('submit', function(e) {
@@ -598,7 +489,6 @@
                 timestamp: new Date().toLocaleString()
             };
             
-            // Save to Firebase
             db.ref('claims').push(claimData).then(() => {
                 alert('✅ Thank you! Your claim has been recorded. Ali will confirm the details.');
                 closeClaimModal();
@@ -612,10 +502,7 @@
         // Load and Display Wishlist
         function loadWishlist() {
             const availableDiv = document.getElementById('availableItems');
-            const claimedDiv = document.getElementById('claimedItems');
             availableDiv.innerHTML = '';
-            claimedDiv.innerHTML = '';
-            let hasClaimedItems = false;
             
             Object.keys(wishlistData).forEach(section => {
                 availableDiv.innerHTML += `<div class="category-header">📌 ${section}</div>`;
@@ -659,27 +546,17 @@
             }
         }
         
-        function showAdminDashboard() {
-            alert('🔐 ADMIN MODE ACTIVATED\n\nFull admin dashboard coming soon!\n\nFor now, you can see claims in your Firebase console.');
-            // TODO: Build full admin dashboard
-        }
-        
         // Close modals when clicking outside
         window.onclick = function(event) {
             const claimModal = document.getElementById('claimModal');
-            const adminModal = document.getElementById('adminLoginModal');
             const itemModal = document.getElementById('itemModal');
             
             if (event.target == claimModal) claimModal.classList.remove('show');
-            if (event.target == adminModal) adminModal.classList.remove('show');
             if (event.target == itemModal) itemModal.classList.remove('show');
         }
         
         // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            initSlideshow();
-            loadWishlist();
-        });
+        document.addEventListener('DOMContentLoaded', loadWishlist);
     </script>
 </body>
 </html>
