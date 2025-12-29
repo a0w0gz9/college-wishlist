@@ -822,6 +822,16 @@
             }
         }
         
+        // Create placeholder image with Michigan colors
+        function createPlaceholderImage(itemName) {
+            const colors = ['#00274C', '#FFCB05', '#003d7a', '#FFD700'];
+            const bgColor = colors[Math.floor(Math.random() * colors.length)];
+            const textColor = bgColor === '#FFCB05' ? '#00274C' : '#FFCB05';
+            const shortName = itemName.substring(0, 3).toUpperCase();
+            
+            return `data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='${encodeURIComponent(bgColor)}'/%3E%3Ctext x='50%25' y='50%25' font-size='48' font-weight='bold' text-anchor='middle' dy='.3em' fill='${encodeURIComponent(textColor)}'%3E${encodeURIComponent(shortName)}%3C/text%3E%3C/svg%3E`;
+        }
+        
         // Display items helper function
         function displayItems(allSections, container) {
             container.innerHTML = '';
@@ -833,11 +843,11 @@
                 
                 allSections[section].forEach(item => {
                     const priceDisplay = item.price ? (item.price.toString().includes('$') ? item.price : '$' + item.price) : 'TBD';
-                    const imageHTML = item.image ? `<img src="${item.image}" alt="${item.name}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 0.5rem; margin-right: 1rem;">` : '';
+                    const placeholderImage = createPlaceholderImage(item.name);
                     const itemHTML = `
                         <div class="item-card">
-                            <div style="display: flex; gap: 1.5rem;">
-                                ${imageHTML}
+                            <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                                <img src="${placeholderImage}" alt="${item.name}" style="width: 150px; height: 150px; border-radius: 0.5rem; flex-shrink: 0;">
                                 <div style="flex: 1;">
                                     <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
                                     <p class="text-gray-600 text-sm mt-1">${item.category || section}</p>
@@ -860,17 +870,28 @@
                 if (item) break;
             }
             
-            if (item) {
-                document.getElementById('itemModalTitle').textContent = item.name;
-                document.getElementById('itemModalBody').innerHTML = `
-                    <img src="${item.image}" style="width: 100%; height: auto; border-radius: 0.5rem; margin: 1rem 0;">
-                    <p><strong>Category:</strong> ${item.category}</p>
-                    <p><strong>Price:</strong> $${item.price}</p>
-                    <p><strong>Description:</strong> ${item.description}</p>
-                    <a href="${item.link}" target="_blank" class="btn-primary inline-block mt-4 px-4 py-2 text-white text-decoration-none rounded">🛒 View on Store</a>
-                `;
-                document.getElementById('itemModal').classList.add('show');
+            // Also check Firebase items if loaded
+            if (!item && db) {
+                db.ref('items').once('value', (snapshot) => {
+                    const firebaseItems = snapshot.val() || {};
+                    item = firebaseItems[itemId];
+                    if (item) displayItemDetail(item);
+                });
+            } else if (item) {
+                displayItemDetail(item);
             }
+        }
+        
+        function displayItemDetail(item) {
+            const priceDisplay = item.price ? (item.price.toString().includes('$') ? item.price : '$' + item.price) : 'TBD';
+            document.getElementById('itemModalTitle').textContent = item.name;
+            document.getElementById('itemModalBody').innerHTML = `
+                <p><strong>Category:</strong> ${item.category}</p>
+                <p><strong>Price:</strong> ${priceDisplay}</p>
+                <p><strong>Description:</strong> ${item.description}</p>
+                <a href="${item.link}" target="_blank" class="btn-primary inline-block mt-4 px-4 py-2 text-white text-decoration-none rounded">🛒 View on Store</a>
+            `;
+            document.getElementById('itemModal').classList.add('show');
         }
         
         // Close modals when clicking outside
