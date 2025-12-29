@@ -755,41 +755,65 @@
             const availableDiv = document.getElementById('availableItems');
             availableDiv.innerHTML = '';
             
-            // Load Firebase items
-            db.ref('items').once('value', (snapshot) => {
-                const firebaseItems = snapshot.val() || {};
+            try {
+                // Start with hardcoded items
+                const allSections = JSON.parse(JSON.stringify(wishlistData));
                 
-                // Merge Firebase items with hardcoded data
-                const allSections = { ...wishlistData };
-                
-                Object.keys(firebaseItems).forEach(itemId => {
-                    const item = firebaseItems[itemId];
-                    if (!allSections[item.category]) {
-                        allSections[item.category] = [];
-                    }
-                    allSections[item.category].push(item);
-                });
-                
-                // Display all items
-                Object.keys(allSections).forEach(section => {
-                    availableDiv.innerHTML += `<div class="category-header">📌 ${section}</div>`;
-                    
-                    allSections[section].forEach(item => {
-                        const itemHTML = `
-                            <div class="item-card">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex-1">
-                                        <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
-                                        <p class="text-gray-600 text-sm mt-1">${item.category}</p>
-                                        <div class="price-tag">${item.price.toString().startsWith('$') ? item.price : '$' + item.price}</div>
-                                        <p class="text-gray-700 mt-2">${item.description}</p>
-                                    </div>
-                                    <button onclick="showItemDetail('${item.id}')" class="claim-button ml-4 whitespace-nowrap">View Details</button>
-                                </div>
-                            </div>
-                        `;
-                        availableDiv.innerHTML += itemHTML;
+                // Try to load Firebase items
+                if (db) {
+                    db.ref('items').once('value', (snapshot) => {
+                        const firebaseItems = snapshot.val() || {};
+                        
+                        // Add Firebase items to sections
+                        Object.keys(firebaseItems).forEach(itemId => {
+                            const item = firebaseItems[itemId];
+                            if (!allSections[item.category]) {
+                                allSections[item.category] = [];
+                            }
+                            allSections[item.category].push(item);
+                        });
+                        
+                        displayItems(allSections, availableDiv);
+                    }).catch(error => {
+                        console.error('Firebase error:', error);
+                        // Still display hardcoded items even if Firebase fails
+                        displayItems(allSections, availableDiv);
                     });
+                } else {
+                    // Firebase not available, just show hardcoded
+                    displayItems(allSections, availableDiv);
+                }
+            } catch (error) {
+                console.error('Load wishlist error:', error);
+                availableDiv.innerHTML = '<p style="color: red;">Error loading items. Please refresh the page.</p>';
+            }
+        }
+        
+        // Display items helper function
+        function displayItems(allSections, container) {
+            container.innerHTML = '';
+            
+            Object.keys(allSections).forEach(section => {
+                if (!allSections[section] || allSections[section].length === 0) return;
+                
+                container.innerHTML += `<div class="category-header">📌 ${section}</div>`;
+                
+                allSections[section].forEach(item => {
+                    const priceDisplay = item.price ? (item.price.toString().includes('$') ? item.price : '$' + item.price) : 'TBD';
+                    const itemHTML = `
+                        <div class="item-card">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
+                                    <p class="text-gray-600 text-sm mt-1">${item.category || section}</p>
+                                    <div class="price-tag">${priceDisplay}</div>
+                                    <p class="text-gray-700 mt-2">${item.description}</p>
+                                </div>
+                                <button onclick="showItemDetail('${item.id}')" class="claim-button ml-4 whitespace-nowrap">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += itemHTML;
                 });
             });
         }
