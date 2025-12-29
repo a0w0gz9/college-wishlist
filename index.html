@@ -379,18 +379,36 @@
         </div>
     </div>
     
-    <!-- Admin Panel Modal -->
+    <!-- Admin Panel Modal - Simple Link Input -->
     <div id="adminPanelModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">⚙️ Admin Panel - Add New Item</div>
-            <form id="addItemForm">
-                <div class="form-group">
-                    <label for="itemName">Item Name *</label>
-                    <input type="text" id="itemName" required placeholder="e.g., Cozy Earth Bath Towel">
+            <div class="modal-header">⚙️ Add Item - Paste Product Link</div>
+            <div class="form-group">
+                <label for="productLink">Product Link *</label>
+                <input type="url" id="productLink" placeholder="Paste product URL here..." style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 0.5rem; font-size: 1rem; font-family: monospace;">
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn-primary" onclick="fetchProductDetails()">🔍 Fetch Details</button>
+                <button type="button" class="btn-secondary" onclick="closeAdminPanel()">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirm Item Modal -->
+    <div id="confirmItemModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">✅ Confirm Item Details</div>
+            <form id="confirmItemForm">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <img id="previewImage" src="" alt="Product" style="max-width: 200px; max-height: 200px; border-radius: 0.5rem;">
                 </div>
                 <div class="form-group">
-                    <label for="itemCategory">Category *</label>
-                    <select id="itemCategory" required style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 0.5rem; font-size: 1rem; font-family: inherit;">
+                    <label for="confirmName">Item Name</label>
+                    <input type="text" id="confirmName" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmCategory">Category *</label>
+                    <select id="confirmCategory" required style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 0.5rem; font-size: 1rem; font-family: inherit;">
                         <option value="">-- Select Category --</option>
                         <option value="Bath">Bath</option>
                         <option value="Bedding">Bedding</option>
@@ -400,24 +418,18 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="itemPrice">Price</label>
-                    <input type="text" id="itemPrice" placeholder="e.g., $45 or TBD">
+                    <label for="confirmPrice">Price</label>
+                    <input type="text" id="confirmPrice">
                 </div>
                 <div class="form-group">
-                    <label for="itemDescription">Description *</label>
-                    <textarea id="itemDescription" required rows="3" placeholder="Brief description of the item"></textarea>
+                    <label for="confirmDescription">Description</label>
+                    <textarea id="confirmDescription" rows="3"></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="itemLink">Product Link *</label>
-                    <input type="url" id="itemLink" required placeholder="https://example.com/product">
-                </div>
-                <div class="form-group">
-                    <label for="itemImage">Image URL *</label>
-                    <input type="url" id="itemImage" required placeholder="https://example.com/image.jpg">
-                </div>
+                <input type="hidden" id="confirmLink">
+                <input type="hidden" id="confirmImage">
                 <div class="button-group">
-                    <button type="submit" class="btn-primary">✅ Add Item</button>
-                    <button type="button" class="btn-secondary" onclick="closeAdminPanel()">❌ Cancel</button>
+                    <button type="submit" class="btn-primary">✅ Save Item</button>
+                    <button type="button" class="btn-secondary" onclick="closeConfirmModal()">❌ Cancel</button>
                 </div>
             </form>
         </div>
@@ -644,21 +656,86 @@
         
         function closeAdminPanel() {
             document.getElementById('adminPanelModal').classList.remove('show');
-            document.getElementById('addItemForm').reset();
+            document.getElementById('productLink').value = '';
         }
         
-        // Handle Add Item Form
-        document.getElementById('addItemForm').addEventListener('submit', function(e) {
+        function closeConfirmModal() {
+            document.getElementById('confirmItemModal').classList.remove('show');
+        }
+        
+        // Auto-detect category based on keywords
+        function detectCategory(text) {
+            const lower = text.toLowerCase();
+            if (lower.includes('towel') || lower.includes('wrap') || lower.includes('bath')) return 'Bath';
+            if (lower.includes('sheet') || lower.includes('pillow') || lower.includes('blanket') || lower.includes('coverlet') || lower.includes('dreamer')) return 'Bedding';
+            if (lower.includes('cart') || lower.includes('drawer') || lower.includes('storage') || lower.includes('organiz')) return 'Storage';
+            if (lower.includes('gift') || lower.includes('card')) return 'Giftable Items';
+            if (lower.includes('luggage') || lower.includes('suitcase') || lower.includes('travel')) return 'Travel Items';
+            return 'Bedding'; // default
+        }
+        
+        // Fetch product details from URL
+        async function fetchProductDetails() {
+            const link = document.getElementById('productLink').value.trim();
+            if (!link) {
+                alert('Please paste a product link!');
+                return;
+            }
+            
+            try {
+                // Fetch the page
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(link)}`);
+                const data = await response.json();
+                const html = data.contents;
+                
+                // Parse HTML to extract metadata
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Get OpenGraph tags
+                const title = doc.querySelector('meta[property="og:title"]')?.getAttribute('content') || 
+                             doc.querySelector('title')?.textContent || 'Product';
+                const image = doc.querySelector('meta[property="og:image"]')?.getAttribute('content') || 
+                             doc.querySelector('img')?.getAttribute('src') || '';
+                const description = doc.querySelector('meta[property="og:description"]')?.getAttribute('content') || 
+                                   doc.querySelector('meta[name="description"]')?.getAttribute('content') || '';
+                
+                // Try to find price
+                const priceMatch = html.match(/\$(\d+\.?\d*)|price['"]?:\s*['"]?\$(\d+\.?\d*)/i);
+                const price = priceMatch ? '$' + priceMatch[1] : 'TBD';
+                
+                // Detect category
+                const category = detectCategory(title + ' ' + description);
+                
+                // Populate confirm modal
+                document.getElementById('previewImage').src = image;
+                document.getElementById('confirmName').value = title.substring(0, 100);
+                document.getElementById('confirmCategory').value = category;
+                document.getElementById('confirmPrice').value = price;
+                document.getElementById('confirmDescription').value = description.substring(0, 200);
+                document.getElementById('confirmLink').value = link;
+                document.getElementById('confirmImage').value = image;
+                
+                closeAdminPanel();
+                document.getElementById('confirmItemModal').classList.add('show');
+            } catch (error) {
+                alert('Could not fetch product details. Details:\n\n' + error.message + '\n\nPlease fill in the details manually.');
+                console.error(error);
+            }
+        }
+        
+        // Handle Confirm Item Form
+        document.getElementById('confirmItemForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const newItem = {
                 id: 'item-' + Date.now(),
-                name: document.getElementById('itemName').value,
-                category: document.getElementById('itemCategory').value,
-                price: document.getElementById('itemPrice').value,
-                description: document.getElementById('itemDescription').value,
-                link: document.getElementById('itemLink').value,
-                image: document.getElementById('itemImage').value,
+                name: document.getElementById('confirmName').value,
+                category: document.getElementById('confirmCategory').value,
+                price: document.getElementById('confirmPrice').value,
+                description: document.getElementById('confirmDescription').value,
+                link: document.getElementById('confirmLink').value,
+                image: document.getElementById('confirmImage').value,
                 addedBy: 'admin',
                 timestamp: new Date().toLocaleString()
             };
@@ -666,7 +743,7 @@
             // Save to Firebase
             db.ref('items/' + newItem.id).set(newItem).then(() => {
                 alert('✅ Item added successfully!');
-                closeAdminPanel();
+                closeConfirmModal();
                 loadWishlist(); // Reload to show new item
             }).catch(error => {
                 alert('Error adding item: ' + error.message);
