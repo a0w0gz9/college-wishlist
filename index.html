@@ -822,11 +822,10 @@
             }
         }
         
-        // Proxy image through CORS-friendly service
-        function proxyImage(imageUrl) {
+        // Just use the image URL directly
+        function getImageUrl(imageUrl) {
             if (!imageUrl) return createPlaceholderImage('Item');
-            // Use weserv.nl which is a free image proxy that handles CORS
-            return `https://images.weserv.nl/?url=${encodeURIComponent(imageUrl)}&w=150&h=150&fit=cover`;
+            return imageUrl;
         }
         
         // Create placeholder image with Michigan colors
@@ -850,12 +849,11 @@
                 
                 allSections[section].forEach(item => {
                     const priceDisplay = item.price ? (item.price.toString().includes('$') ? item.price : '$' + item.price) : 'TBD';
-                    const imageUrl = item.image ? proxyImage(item.image) : createPlaceholderImage(item.name);
-                    const fallbackImage = createPlaceholderImage(item.name);
+                    const imageUrl = item.image || createPlaceholderImage(item.name);
                     const itemHTML = `
                         <div class="item-card">
                             <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
-                                <img src="${imageUrl}" alt="${item.name}" style="width: 150px; height: 150px; border-radius: 0.5rem; flex-shrink: 0; object-fit: cover;" onerror="this.src='${fallbackImage}'">
+                                <img src="${imageUrl}" alt="${item.name}" style="width: 150px; height: 150px; border-radius: 0.5rem; flex-shrink: 0; object-fit: cover;" crossorigin="anonymous" loading="lazy">
                                 <div style="flex: 1;">
                                     <h3 class="text-xl font-bold text-engineering">${item.name}</h3>
                                     <p class="text-gray-600 text-sm mt-1">${item.category || section}</p>
