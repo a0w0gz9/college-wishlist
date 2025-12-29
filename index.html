@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Olivia's College Wishlist - University of Michigan Class of 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-compat-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-compat-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Varsity&family=Collegiate&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -437,6 +437,9 @@
     
     <script>
         // FIREBASE CONFIG
+        let db = null;
+        let firebaseReady = false;
+        
         const firebaseConfig = {
             apiKey: "AIzaSyDH7bGW6FdbzZnMIomoW_NtOA54hI_mGoE",
             authDomain: "college-wishlist.firebaseapp.com",
@@ -446,11 +449,28 @@
             databaseURL: "https://college-wishlist-default-rtdb.firebaseio.com"
         };
         
-        try {
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.database();
-        } catch(error) {
-            console.error('Firebase initialization error:', error);
+        // Wait for Firebase to be available
+        function initFirebase() {
+            try {
+                if (typeof firebase !== 'undefined') {
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.database();
+                    firebaseReady = true;
+                    console.log('Firebase initialized successfully');
+                } else {
+                    console.warn('Firebase SDK not loaded');
+                }
+            } catch(error) {
+                console.error('Firebase initialization error:', error);
+            }
+        }
+        
+        // Try to init Firebase immediately, or wait for it
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFirebase);
+        } else {
+            setTimeout(initFirebase, 100);
+            setTimeout(initFirebase, 500);
         }
         
         // WISHLIST DATA
@@ -621,6 +641,11 @@
                 timestamp: new Date().toLocaleString()
             };
             
+            if (!firebaseReady || !db) {
+                alert('⚠️ Firebase not ready. Please try again in a moment.');
+                return;
+            }
+            
             db.ref('claims').push(claimData).then(() => {
                 alert('✅ Thank you! Your claim has been recorded. Ali will confirm the details.');
                 closeClaimModal();
@@ -728,6 +753,11 @@
         document.getElementById('confirmItemForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            if (!firebaseReady || !db) {
+                alert('⚠️ Firebase not ready. Please try again in a moment.');
+                return;
+            }
+            
             const newItem = {
                 id: 'item-' + Date.now(),
                 name: document.getElementById('confirmName').value,
@@ -759,8 +789,8 @@
                 // Start with hardcoded items
                 const allSections = JSON.parse(JSON.stringify(wishlistData));
                 
-                // Try to load Firebase items
-                if (db) {
+                // Try to load Firebase items if Firebase is ready
+                if (firebaseReady && db) {
                     db.ref('items').once('value', (snapshot) => {
                         const firebaseItems = snapshot.val() || {};
                         
@@ -781,11 +811,14 @@
                     });
                 } else {
                     // Firebase not available, just show hardcoded
+                    console.log('Displaying hardcoded items (Firebase not ready)');
                     displayItems(allSections, availableDiv);
                 }
             } catch (error) {
                 console.error('Load wishlist error:', error);
-                availableDiv.innerHTML = '<p style="color: red;">Error loading items. Please refresh the page.</p>';
+                // Try to at least display what we can
+                const allSections = JSON.parse(JSON.stringify(wishlistData));
+                displayItems(allSections, document.getElementById('availableItems'));
             }
         }
         
